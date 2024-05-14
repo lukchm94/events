@@ -1,0 +1,43 @@
+[project]
+name = "kafka-events"
+version = "0.1.0"
+description = "The app to create and listen to kafka events"
+authors = [
+    {name = "Lukasz Chmielewski", email = "lukchm94@gmail.com"},
+]
+dependencies = []
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "black>=22.8.0",
+    "pydantic>=2.0.0",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.25.0",
+    "typing_extensions>=4.9.0",
+    "pandas>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "mysql-connector-python>=4.0.0",
+    "pytest==7.2.0",
+    "pymysql>=1.1.0",
+    "cryptography>=42.0.0",
+    "confluent-kafka==2.4.0",
+    "avro-python3==1.10.2",
+    "urllib3==2.2.1",
+    "python-jose>=3.3.0",
+    "requests>=2.31.0"
+]
+
+[tool.pdm.scripts]
+dev = "uvicorn src.server.main:app --reload"
+tests = "pytest --disable-warnings"
