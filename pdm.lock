@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:7657b2416e871387f66c1cdbdc0d68da5c4dbb2eab1728cac45854eb7a354269"
+content_hash = "sha256:88a6919aa3e955338c34019c7b36ae0e514a39b69bd87d1b3947d28d902df100"
 
 [[package]]
 name = "annotated-types"
@@ -42,6 +42,16 @@ groups = ["dev"]
 files = [
     {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
     {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
+]
+
+[[package]]
+name = "avro"
+version = "1.11.3"
+requires_python = ">=3.6"
+summary = "Avro is a serialization and RPC framework."
+groups = ["dev"]
+files = [
+    {file = "avro-1.11.3.tar.gz", hash = "sha256:3393bb5139f9cf0791d205756ce1e39a5b58586af5b153d6a3b5a199610e9d17"},
 ]
 
 [[package]]

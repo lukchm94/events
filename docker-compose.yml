@@ -5,16 +5,20 @@ services:
     image: confluentinc/cp-zookeeper:7.0.1
     hostname: zookeeper
     container_name: zookeeper
+    # platform: linux/arm64/v8
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-service-network
 
   kafka:
     image: confluentinc/cp-kafka:7.0.1
     hostname: kafka
     container_name: kafka
+    # platform: linux/arm64/v8
     depends_on:
       - zookeeper
     ports:
@@ -26,11 +30,14 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
       - ./kafka-data:/var/lib/kafka/data  # Persist Kafka data (optional)
+    networks:
+      - kafka-service-network
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.0.1
     hostname: schema-registry
     container_name: schema-registry
+    # platform: linux/arm64/v8
     depends_on:
       - kafka
     ports:
@@ -39,13 +46,28 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    networks:
+      - kafka-service-network
 
-  app:
+  kafka-service:
+    container_name: kafka-service
     build:
       context: .
       dockerfile: Dockerfile  # Assuming Dockerfile is in the root directory
+    env_file:
+      - ./prod.env
     ports:
-      - "8000:8000"
+      - '8080:8080'
+    volumes:
+      - .:/kafka-service
     depends_on:
       - schema-registry
-    network_mode: service:schema-registry
+    networks:
+      - kafka-service-network
+
+volumes:
+  kafka-data:
+  kafka-service:
+
+networks:
+  kafka-service-network:
