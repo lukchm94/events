@@ -1,7 +1,6 @@
 from avro.io import BinaryDecoder, DatumReader
 from avro.schema import Parse
 from confluent_kafka import Consumer
-from confluent_kafka.error import KafkaError
 
 schema = Parse(open("src/events/schemas/user.avsc", "rb").read())
 

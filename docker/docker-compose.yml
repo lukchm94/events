@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  zookeeper-events-service:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper-events-service
+    container_name: zookeeper-events-service
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka-events-service:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka-events-service
+    container_name: kafka-events-service
+    # platform: linux/arm64/v8
+    depends_on:
+      - zookeeper-events-service
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./kafka-data:/var/lib/kafka/data  # Persist Kafka data (optional)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-events-service:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-events-service:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9997
+      KAFKA_JMX_HOSTNAME: kafka-events-service
+  
+  schema-registry-events-service:
+    image: confluentinc/cp-schema-registry:latest
+    ports:
+      - "8085:8085"
+    depends_on:
+      - kafka-events-service
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-events-service:29092
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry-events-service
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry-events-service:8085
+      SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: "http"
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+  
+  kafka-ui-events:
+    container_name: kafka-ui-events
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka-events-service
+      - schema-registry-events-service
+      - zookeeper-events-service
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-events-service:29092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry-events-service:8085
+
+  kafka-service:
+    container_name: kafka-service
+    build:
+      context: .
+      dockerfile: Dockerfile  # Assuming Dockerfile is in the root directory
+    env_file:
+      - ./prod.env
+    ports:
+      - '8080:8080'
+    volumes:
+      - .:/kafka-service
+    depends_on:
+      - schema-registry-events-service
+    networks:
+      - kafka-service-network
+
+volumes:
+  kafka-data:
+  kafka-service:
+
+networks:
+  kafka-service-network:
